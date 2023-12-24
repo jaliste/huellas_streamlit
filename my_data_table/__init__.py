@@ -3,7 +3,7 @@ import streamlit.components.v1 as components
 
 # Create a _RELEASE constant. We'll set this to False while we're developing
 # the component, and True when we're ready to package and distribute it.
-_RELEASE = False
+_RELEASE = True
 
 if not _RELEASE:
     _my_data_table = components.declare_component(
