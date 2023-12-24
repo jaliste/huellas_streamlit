@@ -6,7 +6,7 @@ import streamlit.components.v1 as components
 import json
 import pandas as pd
 from my_data_table import my_data_table
-from babel.numbers import format_number
+from babel.numbers import format_decimal as format_number
 # Create a connection object.
 conn = st.connection("gsheets", type=GSheetsConnection)
 # CobrosYAbonos2023
