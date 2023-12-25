@@ -24,16 +24,16 @@ def check_password():
         else:
             st.session_state["password_correct"] = False
 
-    # Return True if the passward is validated.
+    # Return True if the password is validated.
     if st.session_state.get("password_correct", False):
         return True
 
     # Show input for password.
     st.text_input(
-        "Password", type="password", on_change=password_entered, key="password"
+        "Contraseña", type="password", on_change=password_entered, key="password"
     )
     if "password_correct" in st.session_state:
-        st.error("😕 Password incorrect")
+        st.error("😕 Contraseña incorrecta")
     return False
 
 
@@ -48,7 +48,6 @@ df = conn.read(worksheet="invoices",unformatted_columns=["Fecha"])
 df = df.dropna(how='all').fillna('')
 df_abonos = conn.read(worksheet="abonos",unformatted_columns=["Fecha"])
 df_abonos = df_abonos.dropna(how='all').fillna('')
-df_abonos["Socio"]=df_abonos["Nombre"]
 df_abonos=df_abonos[df_abonos["TipoAbono"]=="CuotaSocial"]
 df_abonos = df_abonos[['Fecha','Rut','Socio','Descripción','Abono','Cargo']]
 df_abonos["Detalle"]=df_abonos["Descripción"]
@@ -59,8 +58,10 @@ df_deuda = df_deuda.dropna(how='all').fillna(0)
 df_deuda = df_deuda[["Fecha","Rut","Socio","Descripción","Abono","Cargo"]]
 
 ruts = list(set(df["Rut"].tolist()))
-rut = st.sidebar.selectbox("Elige tu rut",ruts,format_func = lambda x: x)
 
+rut = st.sidebar.selectbox("Elige tu rut",["-"]+ruts,index=0,format_func = lambda x: x)
+if rut=="-":
+    st.stop()
 df = df[df['Rut']==rut]
 df["Cargo"] = df["Total"]
 df["Abono"] = 0
@@ -78,12 +79,14 @@ for i,row in df.iterrows():
     details[invoice] = df_di.to_dict('records')
 
 df3 = pd.concat([df,df_abonos,df_deuda]).sort_values(by="Fecha")
-st.sidebar.markdown("**Socia(o):**\t"+list(df3['Socio'])[0])
 
 #df3 = df3[['Fecha','Invoice','Producto',"Costo","Cant","Unid","Total"]]
 df3 = df3.reset_index()
 st.title("Cooperativa Huellas Verdes")
 st.header("Abonos y Cargos Cuotas Sociales")
+st.markdown("**Socia(o):**\t"+list(df3['Socio'])[0])
+st.markdown("**Rut:**\t"+rut)
+
 st.subheader("Resumen")
 abono = sum(df3["Abono"])
 cargo = sum(df3["Cargo"])
