@@ -58,7 +58,7 @@ df_deuda = df_deuda.dropna(how='all').fillna(0)
 df_deuda = df_deuda[["Fecha","Rut","Socio","Descripción","Abono","Cargo"]]
 
 ruts = list(set(df["Rut"].tolist()))
-
+ruts.sort()
 rut = st.sidebar.selectbox("Elige tu rut",["-"]+ruts,index=0,format_func = lambda x: x)
 if rut=="-":
     st.stop()
