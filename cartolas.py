@@ -8,33 +8,10 @@ import pandas as pd
 from my_data_table import my_data_table
 from babel.numbers import format_decimal as format_number
 
+from password import check_password
+import extra_streamlit_components as stx
 
-import hmac
-import streamlit as st
-
-
-def check_password():
-    """Returns `True` if the user had the correct password."""
-
-    def password_entered():
-        """Checks whether a password entered by the user is correct."""
-        if hmac.compare_digest(st.session_state["password"], st.secrets["password"]):
-            st.session_state["password_correct"] = True
-            del st.session_state["password"]  # Don't store the password.
-        else:
-            st.session_state["password_correct"] = False
-
-    # Return True if the password is validated.
-    if st.session_state.get("password_correct", False):
-        return True
-
-    # Show input for password.
-    st.text_input(
-        "Contraseña", type="password", on_change=password_entered, key="password"
-    )
-    if "password_correct" in st.session_state:
-        st.error("😕 Contraseña incorrecta")
-    return False
+cookie_manager = stx.CookieManager()
 
 
 if not check_password():
@@ -59,9 +36,15 @@ df_deuda = df_deuda[["Fecha","Rut","Socio","Descripción","Abono","Cargo"]]
 
 ruts = list(set(df["Rut"].tolist()))
 ruts.sort()
-rut = st.sidebar.selectbox("Elige tu rut",["-"]+ruts,index=0,format_func = lambda x: x)
-if rut=="-":
-    st.stop()
+rutCookie = cookie_manager.get(cookie="__huellas_verdes_RUT__")
+if rutCookie is None:
+    rut = st.sidebar.selectbox("Elige tu rut",["-"]+ruts,index=0,format_func = lambda x: x)
+    if rut=="-":
+        st.stop()
+    else:
+        cookie_manager.set("__huellas_verdes_RUT__",rut)
+else:
+    rut = rutCookie
 df = df[df['Rut']==rut]
 df["Cargo"] = df["Total"]
 df["Abono"] = 0
@@ -84,9 +67,15 @@ df3 = pd.concat([df,df_abonos,df_deuda]).sort_values(by="Fecha")
 df3 = df3.reset_index()
 st.title("Cooperativa Huellas Verdes")
 st.header("Abonos y Cargos Cuotas Sociales")
-st.markdown("**Socia(o):**\t"+list(df3['Socio'])[0])
-st.markdown("**Rut:**\t"+rut)
-
+def cambiar_socio():
+    cookie_manager.delete("__huellas_verdes_RUT__")
+    st.stop()
+c1,c2=st.columns(2)
+with c1:
+    st.markdown("**Socia(o):**\t"+list(df3['Socio'])[0])
+    st.markdown("**Rut:**\t"+rut)
+with c2:
+    button=st.button("Cambiar Socio",on_click=cambiar_socio)
 st.subheader("Resumen")
 abono = sum(df3["Abono"])
 cargo = sum(df3["Cargo"])
