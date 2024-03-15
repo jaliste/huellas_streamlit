@@ -147,7 +147,7 @@ const MyDataTable: React.FC<ComponentProps> = props => {
   const tableColumnExtensions: Table.ColumnExtension[] = [
     { columnName: 'Cargo', align: "right" },
     { columnName: 'Abono', align: "right" },
-    { columnName: 'Descripción', width:"280px", wordWrapEnabled: true},
+    { columnName: 'Descripción', width:"250px", wordWrapEnabled: true},
   ];
   const [currencyColumns] = useState(['Cargo','Abono']);
   const [totalSummaryItems] = useState([
