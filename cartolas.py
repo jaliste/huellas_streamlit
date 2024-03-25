@@ -23,7 +23,7 @@ if logged_in is None:
 conn = st.connection("gsheets", type=GSheetsConnection)
 # CobrosYAbonos2023
 df_ruts = conn.read(worksheet="RutSocios")
-ruts = list(set(df["RUT"].tolist()))
+ruts = list(set(df_ruts["RUT"].tolist()))
 ruts.sort()
 
 
