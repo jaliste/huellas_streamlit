@@ -24,22 +24,22 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 # CobrosYAbonos2023
 import numpy as np
 
-df_ruts = conn.read(worksheet="RutSocios")
+df_ruts = conn.read(worksheet="RutSocios",ttl="1d")
 df_ruts = df_ruts[["RUT"]]
 df_ruts = df_ruts.dropna()
 ruts = list(set(df_ruts["RUT"].tolist()))
 ruts.sort()
 
-df = conn.read(worksheet="invoices",unformatted_columns=["Fecha"])
+df = conn.read(worksheet="invoices",ttl="1d",unformatted_columns=["Fecha"])
 df = df.dropna(how='all').fillna('')
-df_abonos = conn.read(worksheet="abonos",unformatted_columns=["Fecha"])
+df_abonos = conn.read(worksheet="abonos",ttl="1d",unformatted_columns=["Fecha"])
 df_abonos = df_abonos.dropna(how='all').fillna('')
 df_abonos=df_abonos[df_abonos["TipoAbono"]=="CuotaSocial"]
 df_abonos = df_abonos[['Fecha','Rut','Socio','Descripción','Abono','Cargo']]
 df_abonos["Detalle"]=df_abonos["Descripción"]
 df_abonos["Descripción"]="Abono por transferencia"
 
-df_deuda = conn.read(worksheet="deuda.inicial",unformatted_columns=["Fecha"])
+df_deuda = conn.read(worksheet="deuda.inicial",ttl="1d",unformatted_columns=["Fecha"])
 df_deuda = df_deuda.dropna(how='all').fillna(0)
 df_deuda = df_deuda[["Fecha","Rut","Socio","Descripción","Abono","Cargo"]]
 
@@ -60,7 +60,7 @@ df=df.drop("Total",axis=1)
 df_abonos = df_abonos[df_abonos['Rut']==rut]
 df_deuda = df_deuda[df_deuda['Rut']==rut]
 
-df_details = conn.read(worksheet="invoice_details",unformatted_columns=["Fecha"])
+df_details = conn.read(worksheet="invoice_details",ttl="1d",unformatted_columns=["Fecha"])
 df_details = df_details.dropna(how='all').fillna('')
 details = {}
 for i,row in df.iterrows():
