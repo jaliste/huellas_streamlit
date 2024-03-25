@@ -2,20 +2,23 @@
 
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
+from st_aggrid import AgGrid
 import streamlit.components.v1 as components
 import json
 import pandas as pd
-from my_data_table import my_data_table
 from babel.numbers import format_decimal as format_number
+from st_mui_table import st_mui_table
 
 from password import check_password
 import extra_streamlit_components as stx
 
 cookie_manager = stx.CookieManager()
 
-
-if not check_password():
-    st.stop()  # Do not continue if check_password is not True.
+logged_in = cookie_manager.get("__huellas_verdes__")
+if logged_in is None:
+    if not check_password():
+        st.stop()  # Do not continue if check_password is not True.
+    cookie_manager.set("__huellas_verdes__","LOGGED_IN")
 
 # Create a connection object.
 conn = st.connection("gsheets", type=GSheetsConnection)
@@ -34,15 +37,16 @@ df_deuda = conn.read(worksheet="deuda.inicial",unformatted_columns=["Fecha"])
 df_deuda = df_deuda.dropna(how='all').fillna(0)
 df_deuda = df_deuda[["Fecha","Rut","Socio","Descripción","Abono","Cargo"]]
 
+
 ruts = list(set(df["Rut"].tolist()))
 ruts.sort()
-rutCookie = cookie_manager.get(cookie="__huellas_verdes_RUT__")
+rutCookie = cookie_manager.get("__huellas_verdes_RUT__")
 if rutCookie is None:
     rut = st.sidebar.selectbox("Elige tu rut",["-"]+ruts,index=0,format_func = lambda x: x)
     if rut=="-":
         st.stop()
     else:
-        cookie_manager.set("__huellas_verdes_RUT__",rut)
+        cookie_manager.set("__huellas_verdes_RUT__",rut,key="set2")
 else:
     rut = rutCookie
 df = df[df['Rut']==rut]
@@ -61,7 +65,10 @@ for i,row in df.iterrows():
     df_di = df_di[["Fecha","Productor","Producto","Costo","Cant","Unid","Total","Modificado"]]
     details[invoice] = df_di.to_dict('records')
 
-df3 = pd.concat([df,df_abonos,df_deuda]).sort_values(by="Fecha")
+df3 = pd.concat([df,df_abonos,df_deuda])
+df3["Fecha"]=pd.to_datetime(df3["Fecha"],format="%d/%m/%Y")
+df3 = df3.sort_values(by="Fecha")
+df3['Fecha'] = df3['Fecha'].dt.strftime('%d/%m/%Y')
 
 #df3 = df3[['Fecha','Invoice','Producto',"Costo","Cant","Unid","Total"]]
 df3 = df3.reset_index()
@@ -76,15 +83,25 @@ with c1:
     st.markdown("**Rut:**\t"+rut)
 with c2:
     button=st.button("Cambiar Socio",on_click=cambiar_socio)
-st.subheader("Resumen")
-abono = sum(df3["Abono"])
-cargo = sum(df3["Cargo"])
-deuda = cargo - abono
-s_abono = "$"+format_number(abono,locale='es_CL')
-s_cargo = "$"+format_number(cargo,locale='es_CL')
-s_deuda= "$"+format_number(deuda,locale='es_CL')
 
-st.markdown(f"<table><tr><td><b>Cargos:</td><td><b style='color:darkblue'>{s_cargo}</b></td></tr><tr><td><b>Abonos:</b></td><td><b style='color:darkblue'>{s_abono}</b></td></tr><tr><td><b>Total Deuda:</b></td><td><b style='color:darkblue'>{s_deuda}</b></td></tr></table>",unsafe_allow_html=True)
+tabPre,tab2024,tab2023,tabExtras = st.tabs(["Precobro","2024","2023","Extras 2022"])
+with tabPre:
+    st.subheader("Pronto")
+with tab2024:
+    st.subheader("Pronto")
+with tabExtras:
+    st.subheader("Pronto")
+with tab2023:
+
+    st.subheader("Resumen")
+    abono = sum(df3["Abono"])
+    cargo = sum(df3["Cargo"])
+    deuda = cargo - abono
+    s_abono = "$"+format_number(abono,locale='es_CL')
+    s_cargo = "$"+format_number(cargo,locale='es_CL')
+    s_deuda= "$"+format_number(deuda,locale='es_CL')
+
+    st.markdown(f"<table><tr><td><b>Cargos:</td><td><b style='color:darkblue'>{s_cargo}</b></td></tr><tr><td><b>Abonos:</b></td><td><b style='color:darkblue'>{s_abono}</b></td></tr><tr><td><b>Total Deuda:</b></td><td><b style='color:darkblue'>{s_deuda}</b></td></tr></table>",unsafe_allow_html=True)
 
 #  |   Abonos: | {sum(df3["Abono"])],
 #    ["Cargos:",sum(df3["Cargo"])],
@@ -95,8 +112,15 @@ st.markdown(f"<table><tr><td><b>Cargos:</td><td><b style='color:darkblue'>{s_car
 #      st.dataframe(json.loads(row["Detalle"]))
 #
 #df = pd.DataFrame(raw_data, columns=["First Name", "Last Name", "Age"])
-st.subheader("Detalles")
-rows = my_data_table(df3, details, groupby="First Name")
+    st.subheader("Detalles")
+    df4 = df3[["Fecha","Descripción","Cargo","Abono","Invoice"]]
+#rows = st_mui_table(df3, details, groupby="First Name")
+    rows = st_mui_table(df4,
+                        enablePagination=False,
+                        detailData=details,
+                        detailColumns=["Invoice"]
+                        )
+
 if rows:
     st.write("You have selected", rows)
 
