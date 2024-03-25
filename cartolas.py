@@ -22,9 +22,13 @@ if logged_in is None:
 # Create a connection object.
 conn = st.connection("gsheets", type=GSheetsConnection)
 # CobrosYAbonos2023
-df_ruts = conn.read(worksheet="RutSocios")
-ruts = list(set(df_ruts["RUT"].tolist()))
+import numpy as np
 
+df_ruts = conn.read(worksheet="RutSocios")
+df_ruts = df_ruts[["RUT"]]
+df_ruts = df_ruts.dropna()
+ruts = list(set(df_ruts["RUT"].tolist()))
+ruts.sort()
 
 df = conn.read(worksheet="invoices",unformatted_columns=["Fecha"])
 df = df.dropna(how='all').fillna('')
@@ -69,7 +73,6 @@ df3 = pd.concat([df,df_abonos,df_deuda])
 df3["Fecha"]=pd.to_datetime(df3["Fecha"],format="%d/%m/%Y")
 df3 = df3.sort_values(by="Fecha")
 df3['Fecha'] = df3['Fecha'].dt.strftime('%d/%m/%Y')
-
 #df3 = df3[['Fecha','Invoice','Producto',"Costo","Cant","Unid","Total"]]
 df3 = df3.reset_index()
 st.title("Cooperativa Huellas Verdes")
@@ -78,9 +81,12 @@ def cambiar_socio():
     cookie_manager.delete("__huellas_verdes_RUT__")
     st.stop()
 c1,c2=st.columns(2)
-with c1:
-    st.markdown("**Socia(o):**\t"+list(df3['Socio'])[0])
-    st.markdown("**Rut:**\t"+rut)
+if (len(df3)==0):
+    st.subheader("No hay info para el RUT. Es Socio(a) pero no tiene info en la APP")
+else:    
+    with c1:
+        st.markdown("**Socia(o):**\t"+list(df3['Socio'])[0])
+        st.markdown("**Rut:**\t"+rut)
 with c2:
     button=st.button("Cambiar Socio",on_click=cambiar_socio)
 
