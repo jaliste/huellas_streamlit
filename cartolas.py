@@ -22,6 +22,10 @@ if logged_in is None:
 # Create a connection object.
 conn = st.connection("gsheets", type=GSheetsConnection)
 # CobrosYAbonos2023
+df_ruts = conn.read(worksheet="RutSocios")
+ruts = list(set(df["RUT"].tolist()))
+ruts.sort()
+
 
 df = conn.read(worksheet="invoices",unformatted_columns=["Fecha"])
 df = df.dropna(how='all').fillna('')
@@ -37,8 +41,6 @@ df_deuda = df_deuda.dropna(how='all').fillna(0)
 df_deuda = df_deuda[["Fecha","Rut","Socio","Descripción","Abono","Cargo"]]
 
 
-ruts = list(set(df["Rut"].tolist()))
-ruts.sort()
 rutCookie = cookie_manager.get("__huellas_verdes_RUT__")
 if rutCookie is None:
     rut = st.sidebar.selectbox("Elige tu rut",["-"]+ruts,index=0,format_func = lambda x: x)
