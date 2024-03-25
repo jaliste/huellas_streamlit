@@ -2,7 +2,6 @@
 
 import streamlit as st
 from streamlit_gsheets import GSheetsConnection
-from st_aggrid import AgGrid
 import streamlit.components.v1 as components
 import json
 import pandas as pd
