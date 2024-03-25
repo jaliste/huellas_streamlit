@@ -24,7 +24,6 @@ conn = st.connection("gsheets", type=GSheetsConnection)
 # CobrosYAbonos2023
 df_ruts = conn.read(worksheet="RutSocios")
 ruts = list(set(df_ruts["RUT"].tolist()))
-ruts.sort()
 
 
 df = conn.read(worksheet="invoices",unformatted_columns=["Fecha"])
