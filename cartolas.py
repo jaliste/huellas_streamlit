@@ -7,7 +7,7 @@ import json
 import pandas as pd
 from babel.numbers import format_decimal as format_number
 from st_mui_table import st_mui_table
-
+import io
 from password import check_password
 import extra_streamlit_components as stx
 
@@ -120,6 +120,16 @@ with tab2023:
 #df = pd.DataFrame(raw_data, columns=["First Name", "Last Name", "Age"])
     st.subheader("Detalles")
     df4 = df3[["Fecha","Descripción","Cargo","Abono","Invoice"]]
+    buffer = io.BytesIO()
+    with pd.ExcelWriter(buffer, engine='xlsxwriter') as writer:
+    # Write each dataframe to a different worksheet.
+        df4.to_excel(writer, sheet_name='Sheet1', index=False)
+        download2 = st.download_button(
+        label="Descargar Excel",
+        data=buffer,
+        file_name='sociales2023.xlsx',
+        mime='application/vnd.ms-excel'
+        )
 #rows = st_mui_table(df3, details, groupby="First Name")
     rows = st_mui_table(df4,
                         enablePagination=False,

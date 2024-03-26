@@ -59,7 +59,7 @@ const TableComponent = (props: ComponentProps) => {
 
   const startRow = state.page * state.rowsPerPage;
   const endRow = startRow + state.rowsPerPage;
-  const currentPageContent = content.slice(startRow, endRow);
+  const currentPageContent = content;
 
   const [shouldUpdateHeight, setShouldUpdateHeight] = React.useState(false);
   
