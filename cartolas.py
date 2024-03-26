@@ -89,17 +89,11 @@ else:
     rut = rutCookie
 
 dfs = get_cobros_abonos_raw(conn,"2024")
-st.dataframe(dfs[0])
-st.dataframe(dfs[1])
-st.dataframe(dfs[2])
-st.dataframe(dfs[3])
+
 
 df3_2024, details_2024 = procesar_cobros_abonos(rut,*dfs)
 dfs = get_cobros_abonos_raw(conn,"2023")
-st.dataframe(dfs[0])
-st.dataframe(dfs[1])
-st.dataframe(dfs[2])
-st.dataframe(dfs[3])
+
 
 df3_2023, details_2023 = procesar_cobros_abonos(rut,*dfs)
 
