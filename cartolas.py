@@ -29,6 +29,9 @@ def procesar_cobros_abonos(rut, df,df_abonos,df_deuda,df_details):
     df_abonos = df_abonos.dropna(how='all').fillna('')
     df_abonos=df_abonos[df_abonos["TipoAbono"]=="CuotaSocial"]
     df_abonos = df_abonos[['Fecha','Rut','Socio','Descripción','Abono','Cargo']]
+    df_abonos["Cargo"].replace('',0,inplace=True)
+    df_abonos["Abono"].replace('',0,inplace=True)
+    
     df_abonos["Detalle"]=df_abonos["Descripción"]
     df_abonos["Descripción"]="Abono por transferencia"
 
